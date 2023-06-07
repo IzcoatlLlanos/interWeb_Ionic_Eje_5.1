@@ -1,0 +1,7 @@
+{
+  "name": "InterWeb_Ionic_Eje_6",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
