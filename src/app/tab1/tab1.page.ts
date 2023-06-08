@@ -1,17 +1,25 @@
 import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { IonicModule, IonDatetime } from '@ionic/angular';
 import { ExploreContainerComponent } from '../explore-container/explore-container.component';
-import { Evento } from '../models/evento';
+import { Evento, EventoForm } from '../models/evento';
 import { EventoService } from '../services/evento.service';
 import {AlertController,IonSearchbar,IonSelect,ModalController,ToastController,} from '@ionic/angular'
 import { CommonModule } from '@angular/common';
+import { AbstractControl,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators, } from '@angular/forms';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ExploreContainerComponent],
+  imports: [IonicModule,FormsModule,ReactiveFormsModule, CommonModule, ExploreContainerComponent],
 })
 
 export class Tab1Page {
@@ -24,20 +32,73 @@ export class Tab1Page {
   };
 
   reservacionEvento: colorEvt[] = [];
-
+  eventoForm: FormGroup<EventoForm>;
   eventoSeleccionado?: Evento;
    eventos    : Evento[] = [];
    isModalOpen = false;
    disponible  = -1;
    openOp      = 0;
    fechaSel    = '';
+   validationMessages;
    
   constructor(
     private evtService: EventoService,
     private alertController: AlertController,
     private toastController: ToastController,
     private modalController: ModalController,) {
+
+    this.eventoForm = new FormGroup({
+      fecha: new FormControl(this.fechaSel,{nonNullable: true,validators: [Validators.required]}),
+      horaInicio: new FormControl('',{nonNullable: true,validators: [Validators.required, Validators.min(10)]}), 
+      horaFin: new FormControl('',{nonNullable: true,validators: [Validators.required,Validators.min(10), Validators.max(23)]}),
+      nombreCliente: new FormControl('',{nonNullable: true,validators: [Validators.required]}),
+      celularCliente: new FormControl('',{nonNullable: true,validators: [Validators.required,Validators.minLength(10),Validators.maxLength(10),Validators.pattern('[0-9]*')]}), 
+      tipoEvento: new FormControl('',{nonNullable: true,validators: [Validators.required]}), 
+      nota: new FormControl('',{nonNullable: true}),  
+      llenadoAgua: new FormControl(0,{nonNullable: true}),
+      mesaRegalos: new FormControl(true,{nonNullable: true,validators: [Validators.required]}),
+      cantPersonas: new FormControl(0,{nonNullable: true,validators: [Validators.required]}), 
+      brincolin: new FormControl(false,{nonNullable: true,validators: [Validators.required]}),
+      mantelColor: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}),
+      precioTotal: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
+      aCuenta: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
+      resto: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
+      metodoPago: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}), 
+      estatus: new FormControl('',{nonNullable: true}),
+      activo: new FormControl(false,{nonNullable: true}) 
+    });
     
+    this.validationMessages = {
+      horaInicio: [
+        {tipo: 'required', mensaje: 'Hora de inicio requerida'},
+        {tipo: 'min', mensaje: 'hora invalida'}
+      ],
+      horaFin: [
+        {tipo: 'required', mensaje: 'Hora de fin requerida'},
+        {tipo: 'max', mensaje: 'hora invalida'},
+        {tipo: 'min', mensaje: 'hora invalida'}  
+    ],
+      nombreCliente: [{tipo: 'required', mensaje: 'Nombre requerido'}],
+      celularCliente: [
+        {tipo: 'required', mensaje: 'Celular requerido'},
+        {tipo: 'minlength', mensaje: 'Telefono incorrecto'},
+        {tipo: 'maxlength', mensaje: 'Telefono incorrecto'},
+        {tipo: 'pattern', mensaje: 'Formato Incorrecto'}
+      ],
+      tipoEvento: [{tipo: 'required', mensaje: 'Tipo de evento requerido'}],
+      nota: [],
+      llenadoAgua: [],
+      mesaRegalos: [{tipo: 'required', mensaje: 'Seleccione una opcion'}],
+      cantPersonas: [{tipo: 'required', mensaje: 'Cantidad requerida'}],
+      brincolin: [{tipo: 'required', mensaje: 'Brincolin requerido'}],
+      mantelColor: [{tipo: 'required', mensaje: 'Color(es) requerido(s)'}],
+      precioTotal: [],
+      aCuenta: [{tipo: 'required', mensaje: 'Debe dar anticipo para reservar'}],
+      resto: [],
+      metodoPago: [{tipo: 'required', mensaje: 'Porfavor seleccione uno'}],
+      estatus: [],
+      activo: [],
+    }
     this. eventos = this.evtService.getEventos();
     console.log(this.eventos);
     this.eventos.forEach((evento) => this.marcarFecha(evento.fecha, evento.tipoEvento));

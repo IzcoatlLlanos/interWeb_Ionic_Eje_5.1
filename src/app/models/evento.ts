@@ -9,7 +9,7 @@ export interface Evento {
    llenadoAgua      : number;
    mesaRegalos      : boolean;
    cantPersonas     : number;
-   brincolin        : string[];
+   brincolin        : boolean;
    mantelColor      : string[];
    precioTotal      : number;
    aCuenta          : number;
@@ -32,7 +32,7 @@ export interface EventoForm {
     llenadoAgua     : FormControl<number>;
     mesaRegalos     : FormControl<boolean>;
     cantPersonas    : FormControl<number>;
-    brincolin       : FormControl<string[]>;
+    brincolin       : FormControl<boolean>;
     mantelColor     : FormControl<string[]>;
     precioTotal     : FormControl<number>;
     aCuenta         : FormControl<number>;

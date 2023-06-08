@@ -19,7 +19,7 @@ export class EventoService {
         llenadoAgua      : 65,
         mesaRegalos      : true,
         cantPersonas     : 150,
-        brincolin        : ['',''],
+        brincolin        : true,
         mantelColor      : ['rojo','azul'],
         precioTotal      : 2500,
         aCuenta          : 1200,
