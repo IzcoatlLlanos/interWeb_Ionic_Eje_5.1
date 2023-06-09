@@ -7,16 +7,16 @@ export interface Evento {
    tipoEvento       : string;
    nota             : string;
    llenadoAgua      : number;
-   mesaRegalos      : boolean;
+   mesaRegalos      : string;
    cantPersonas     : number;
-   brincolin        : boolean;
+   brincolin        : string;
    mantelColor      : string[];
    precioTotal      : number;
    aCuenta          : number;
    resto            : number;
    metodoPago       : string[];
    estatus          : string;   
-   activo         : boolean;
+   activo         : string;
 }
 
 import { FormControl } from '@angular/forms';
@@ -30,15 +30,15 @@ export interface EventoForm {
     tipoEvento      : FormControl<string>;
     nota            : FormControl<string>;
     llenadoAgua     : FormControl<number>;
-    mesaRegalos     : FormControl<boolean>;
+    mesaRegalos     : FormControl<string>;
     cantPersonas    : FormControl<number>;
-    brincolin       : FormControl<boolean>;
+    brincolin       : FormControl<string>;
     mantelColor     : FormControl<string[]>;
     precioTotal     : FormControl<number>;
     aCuenta         : FormControl<number>;
     resto           : FormControl<number>;
     metodoPago      : FormControl<string[]>;
     estatus         : FormControl<string>;
-    activo        : FormControl<boolean>;
+    activo        : FormControl<string>;
   }
   

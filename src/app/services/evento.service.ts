@@ -10,23 +10,23 @@ export class EventoService {
     this.eventos = [
       {
         fecha            : '2023-06-23',
-        horaInicio       : '16:00',
-        horaFin          : '23:00',
-        nombreCliente    : 'Hector Izcoatl Llanos Godoy',
+        horaInicio       : '16',
+        horaFin          : '23',
+        nombreCliente    : 'Filomeno',
         celularCliente   : '3112356094',
         tipoEvento       : 'Cumpleaños',
-        nota             : '',
+        nota             : 'Reservación de filomeno',
         llenadoAgua      : 65,
-        mesaRegalos      : true,
-        cantPersonas     : 150,
-        brincolin        : true,
-        mantelColor      : ['rojo','azul'],
+        mesaRegalos      : 'si',
+        cantPersonas     : 90,
+        brincolin        : 'no',
+        mantelColor      : ['ROJO','AZUL'],
         precioTotal      : 2500,
         aCuenta          : 1200,
         resto            : 1300,
-        metodoPago       : ['Anticipo Efectivo', 'Resto transferencia'],
+        metodoPago       : ['EFECTIVO'],
         estatus          : 'Pagado',
-        activo           : true,
+        activo           : 'si',
       }
     ]
   }
@@ -44,6 +44,10 @@ export class EventoService {
 
   public updateEvento(evt: Evento, pos: number) {
     this.eventos[pos] = evt;
+  }
+
+  findEventoIndex(fecha: string): number {
+    return this.eventos.findIndex( evt => {return  evt.fecha == fecha});
   }
 
   public deleteEvento(pos: number) {

@@ -38,6 +38,7 @@ export class Tab1Page {
    isModalOpen = false;
    disponible  = -1;
    openOp      = 0;
+   updateEvt = false;
    fechaSel    = '';
    validationMessages;
    
@@ -55,17 +56,17 @@ export class Tab1Page {
       celularCliente: new FormControl('',{nonNullable: true,validators: [Validators.required,Validators.minLength(10),Validators.maxLength(10),Validators.pattern('[0-9]*')]}), 
       tipoEvento: new FormControl('',{nonNullable: true,validators: [Validators.required]}), 
       nota: new FormControl('',{nonNullable: true}),  
-      llenadoAgua: new FormControl(0,{nonNullable: true}),
-      mesaRegalos: new FormControl(true,{nonNullable: true,validators: [Validators.required]}),
-      cantPersonas: new FormControl(0,{nonNullable: true,validators: [Validators.required]}), 
-      brincolin: new FormControl(false,{nonNullable: true,validators: [Validators.required]}),
+      llenadoAgua: new FormControl(45,{nonNullable: true, validators: [Validators.required, Validators.min(45), Validators.max(500)]}),
+      mesaRegalos: new FormControl('si',{nonNullable: true,validators: [Validators.required]}),
+      cantPersonas: new FormControl(0,{nonNullable: true,validators: [Validators.required, Validators.max(100), Validators.min(1)]}), 
+      brincolin: new FormControl('si',{nonNullable: true,validators: [Validators.required]}),
       mantelColor: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}),
-      precioTotal: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
-      aCuenta: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
-      resto: new FormControl(0,{nonNullable: true,validators: [Validators.required]}),
+      precioTotal: new FormControl(2200,{nonNullable: true,validators: [Validators.required]}),
+      aCuenta: new FormControl(500,{nonNullable: true,validators: [Validators.required]}),
+      resto: new FormControl(1700,{nonNullable: true,validators: [Validators.required]}),
       metodoPago: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}), 
       estatus: new FormControl('',{nonNullable: true}),
-      activo: new FormControl(false,{nonNullable: true}) 
+      activo: new FormControl('si',{nonNullable: true}) 
     });
     
     this.validationMessages = {
@@ -87,13 +88,23 @@ export class Tab1Page {
       ],
       tipoEvento: [{tipo: 'required', mensaje: 'Tipo de evento requerido'}],
       nota: [],
-      llenadoAgua: [],
+      llenadoAgua: [
+        {tipo: 'required', mensaje: 'Tipo de evento requerido'},
+        {tipo: 'max', mensaje: 'El maximo es 100%'},
+        {tipo: 'min', mensaje: '45 Es el minimo'}  
+      ],
       mesaRegalos: [{tipo: 'required', mensaje: 'Seleccione una opcion'}],
-      cantPersonas: [{tipo: 'required', mensaje: 'Cantidad requerida'}],
+      cantPersonas: [
+        {tipo: 'required', mensaje: 'Cantidad requerida'},
+        {tipo: 'max', mensaje: 'El maximo es 100'},
+        {tipo: 'min', mensaje: 'Ingrese una cantidad valida'}  
+      ],
       brincolin: [{tipo: 'required', mensaje: 'Brincolin requerido'}],
       mantelColor: [{tipo: 'required', mensaje: 'Color(es) requerido(s)'}],
       precioTotal: [],
-      aCuenta: [{tipo: 'required', mensaje: 'Debe dar anticipo para reservar'}],
+      aCuenta: [
+        {tipo: 'required', mensaje: 'Debe dar anticipo para reservar'}
+      ],
       resto: [],
       metodoPago: [{tipo: 'required', mensaje: 'Porfavor seleccione uno'}],
       estatus: [],
@@ -104,6 +115,46 @@ export class Tab1Page {
     this.eventos.forEach((evento) => this.marcarFecha(evento.fecha, evento.tipoEvento));
     
     
+  }
+
+  calcularExtras() {
+    let total = 2200;
+    this.eventoForm.controls['fecha'].setValue(this.fechaSel);
+    if (this.eventoForm.controls['brincolin'].value=='si') total = total+ 500;
+    const alb = this.eventoForm.controls['llenadoAgua'].value
+    if(alb>45) total = total + (1500*(alb/100));
+    this.eventoForm.controls['precioTotal'].setValue(total);
+    const aCuenta = this.eventoForm.controls['aCuenta'].value;
+    const resto = total-aCuenta
+    this.eventoForm.controls['resto'].setValue(resto);
+    if(resto==0) this.eventoForm.controls['estatus'].setValue('pagado');
+    else this.eventoForm.controls['estatus'].setValue('restante');
+    const fecha = this.eventoForm.controls['fecha'].value;
+    console.log(fecha);
+    //this.eventoForm.controls['total'].setValue(true);
+  }
+
+  agregarEvento() {
+    this.calendar.reset();
+    const evento: Evento = this.eventoForm.getRawValue();
+    this.evtService.addEvento(evento);
+    this.eventos.push(evento);
+    console.log(evento);
+    this.eventos.forEach((evento) => this.marcarFecha(evento.fecha, evento.tipoEvento));
+    this.limpiarFormularioForce();
+  }
+
+  setUpdate(upd: boolean) {
+    this.updateEvt = upd;
+  }
+
+  modificar() {
+    this.eventoForm.controls['resto'].setValue(0);
+    this.eventoForm.controls['aCuenta'].setValue(0);
+    const eventoUpd = this.eventoForm.getRawValue();
+    const index = this.evtService.findEventoIndex(eventoUpd.fecha);
+    this.evtService.updateEvento(eventoUpd,index);
+    this.eventos[index]=eventoUpd;
   }
 
   private marcarFecha(fecha: string, tipo: string) {
@@ -143,9 +194,13 @@ export class Tab1Page {
         this.presentToast('Fecha Ocupada','danger');
         this.eventoSeleccionado = this.evtService.getEveto(date);
         this.disponible = 0;
+        const eventoActual = this.evtService.getEveto(this.fechaSel);
+        if (eventoActual) this.eventoForm.patchValue(eventoActual);
+        console.log(eventoActual);
       }
       else { 
         this.presentToast('Fecha Disponible','success');
+        this.limpiarFormularioForce();
         this.disponible = 1;
       }
     }else {
@@ -184,6 +239,29 @@ export class Tab1Page {
     alert.present();
     alert.onDidDismiss().then((respuesta) => {
       if (dismissFunction) dismissFunction(respuesta);
+    });
+  }
+
+  limpiarFormularioForce() {
+    this.eventoForm = new FormGroup({
+      fecha: new FormControl(this.fechaSel,{nonNullable: true,validators: [Validators.required]}),
+      horaInicio: new FormControl('',{nonNullable: true,validators: [Validators.required, Validators.min(10)]}), 
+      horaFin: new FormControl('',{nonNullable: true,validators: [Validators.required,Validators.min(10), Validators.max(23)]}),
+      nombreCliente: new FormControl('',{nonNullable: true,validators: [Validators.required]}),
+      celularCliente: new FormControl('',{nonNullable: true,validators: [Validators.required,Validators.minLength(10),Validators.maxLength(10),Validators.pattern('[0-9]*')]}), 
+      tipoEvento: new FormControl('',{nonNullable: true,validators: [Validators.required]}), 
+      nota: new FormControl('',{nonNullable: true}),  
+      llenadoAgua: new FormControl(45,{nonNullable: true, validators: [Validators.required, Validators.min(45), Validators.max(500)]}),
+      mesaRegalos: new FormControl('si',{nonNullable: true,validators: [Validators.required]}),
+      cantPersonas: new FormControl(0,{nonNullable: true,validators: [Validators.required, Validators.max(100), Validators.min(1)]}), 
+      brincolin: new FormControl('si',{nonNullable: true,validators: [Validators.required]}),
+      mantelColor: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}),
+      precioTotal: new FormControl(2200,{nonNullable: true,validators: [Validators.required]}),
+      aCuenta: new FormControl(500,{nonNullable: true,validators: [Validators.required, Validators.min(100)]}),
+      resto: new FormControl(1700,{nonNullable: true,validators: [Validators.required]}),
+      metodoPago: new FormControl<string[]>([],{nonNullable: true,validators: [Validators.required]}), 
+      estatus: new FormControl('',{nonNullable: true}),
+      activo: new FormControl('si',{nonNullable: true}) 
     });
   }
 
